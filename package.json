@@ -14,5 +14,6 @@
   "devDependencies": {
     "@types/node": "^16.11.4",
     "eslint": "^7.32.0"
-  }
+  },
+  "type": "module"
 }
