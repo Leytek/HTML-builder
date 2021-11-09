@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import fss from 'fs';
 import path from 'path';
 import readline from 'readline';
+import {once} from 'events';
 
 async function copyDir(from, to){
   const fromDirPath = new URL(from, import.meta.url).pathname.slice(1),
@@ -41,23 +42,22 @@ async function renderTemplate(from, to){
     componentsDirPath = new URL('./components', import.meta.url).pathname.slice(1),
     template = new fss.ReadStream(templatePath, 'utf-8'),
     result = new fss.WriteStream(resultPath),
-    componentsDir = await fs.readdir(componentsDirPath),
-    rli = readline.createInterface({input: template, output: result});
+    componentsDir = await fs.readdir(componentsDirPath);
 
-    
+  let components = {}, fileStream;
 
-  rli.on('line', line => {
-    const replaceTag = (m, p1) => {
-        const f = new fss.ReadStream(path.join(componentsDirPath, p1 + '.html'), 'utf-8');
-        let data, chunk;
+  for(let file of componentsDir){
+    const fileBaseName = path.basename(file, path.extname(file));
+    fileStream = new fss.ReadStream(path.join(componentsDirPath, file), 'utf-8');
+    fileStream.on('data', chunk => components[fileBaseName] = (components[fileBaseName] || '') + chunk);
+  }
 
-          while(f.readable && (chunk = f.read() !== null))
-            {data = (data || '') + chunk;console.log(data)}
-
-        return data;
-      },
-      lineReplace = line.replace(/\{\{(\w+)\}\}/, replaceTag);
-    result.write(lineReplace + '\n');
+  fileStream.on('end', () => {
+    const rli = readline.createInterface({input: template, output: result});
+    rli.on('line', line => {
+      const lineReplace = line.replace(/\{\{(\w+)\}\}/, (m, p1) => components[p1] || '');
+      result.write(lineReplace + '\n');
+    });
   });
 }
 
