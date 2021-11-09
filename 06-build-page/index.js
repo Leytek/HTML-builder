@@ -2,7 +2,6 @@ import fs from 'fs/promises';
 import fss from 'fs';
 import path from 'path';
 import readline from 'readline';
-import {once} from 'events';
 
 async function copyDir(from, to){
   const fromDirPath = new URL(from, import.meta.url).pathname.slice(1),
