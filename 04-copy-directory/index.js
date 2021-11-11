@@ -1,9 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
+import url from 'url';
 
 async function copyDir(from, to){
-  const fromDirPath = new URL(from, import.meta.url).pathname.slice(1),
-    toDirPath = new URL(to, import.meta.url).pathname.slice(1),
+  const fromDirPath = url.fileURLToPath(new URL(from, import.meta.url)),
+    toDirPath = url.fileURLToPath(new URL(to, import.meta.url)),
     fromDir = await fs.readdir(fromDirPath, {withFileTypes: true});
 
   await fs.mkdir(toDirPath, {recursive: true});

@@ -1,10 +1,11 @@
 import fs from 'fs/promises';
 import fss from 'fs';
 import path from 'path';
+import url from 'url';
 
 async function createBundle(){
-  const stylesDirPath = new URL('./styles', import.meta.url).pathname.slice(1),
-    bundlePath = new URL('./project-dist/bundle.css', import.meta.url).pathname.slice(1),
+  const stylesDirPath = url.fileURLToPath(new URL('./styles', import.meta.url)),
+    bundlePath = url.fileURLToPath(new URL('./project-dist/bundle.css', import.meta.url)),
     stylesDir = await fs.readdir(stylesDirPath),
     bundle = new fss.WriteStream(bundlePath);
 

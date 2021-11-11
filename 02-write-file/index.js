@@ -1,7 +1,8 @@
 import process from 'process';
 import * as fs from 'fs';
+import url from 'url';
 
-const filePath = new URL('./text.txt', import.meta.url).pathname.slice(1);
+const filePath = url.fileURLToPath(new URL('./text.txt', import.meta.url));
 const fileStream = new fs.WriteStream(filePath, 'utf-8');
 
 console.log('Hello world! Enter you\'r massage:');

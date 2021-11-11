@@ -2,10 +2,13 @@ import fs from 'fs/promises';
 import fss from 'fs';
 import path from 'path';
 import readline from 'readline';
+import url from 'url';
+
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 async function copyDir(from, to){
-  const fromDirPath = new URL(from, import.meta.url).pathname.slice(1),
-    toDirPath = new URL(to, import.meta.url).pathname.slice(1),
+  const fromDirPath = path.join(__dirname, from),
+    toDirPath = path.join(__dirname, to),
     fromDir = await fs.readdir(fromDirPath, {withFileTypes: true});
 
   await fs.mkdir(toDirPath, {recursive: true});
@@ -19,13 +22,13 @@ async function copyDir(from, to){
     if(file.isFile())
       fs.copyFile(path.join(fromDirPath, file.name), path.join(toDirPath, file.name));
     else
-      copyDir(from + '/' + file.name, to + '/' + file.name);
+      copyDir(path.join(from, file.name), path.join(to, file.name));
   }
 }
 
 async function createBundle(from, to, ext = path.extname(to)){
-  const sourceDirPath = new URL(from, import.meta.url).pathname.slice(1),
-    bundlePath = new URL(to, import.meta.url).pathname.slice(1),
+  const sourceDirPath = path.join(__dirname, from),
+    bundlePath = path.join(__dirname, to),
     sourceDir = await fs.readdir(sourceDirPath),
     bundle = new fss.WriteStream(bundlePath);
 
@@ -36,9 +39,9 @@ async function createBundle(from, to, ext = path.extname(to)){
 }
 
 async function renderTemplate(from, to){
-  const templatePath = new URL(from, import.meta.url).pathname.slice(1),
-    resultPath = new URL(to, import.meta.url).pathname.slice(1),
-    componentsDirPath = new URL('./components', import.meta.url).pathname.slice(1),
+  const templatePath = path.join(__dirname, from),
+    resultPath = path.join(__dirname, to),
+    componentsDirPath = path.join(__dirname, 'components'),
     template = new fss.ReadStream(templatePath, 'utf-8'),
     result = new fss.WriteStream(resultPath),
     componentsDir = await fs.readdir(componentsDirPath);
@@ -61,10 +64,10 @@ async function renderTemplate(from, to){
 }
 
 async function buildPage(){
-  await fs.mkdir(new URL('./project-dist', import.meta.url).pathname.slice(1), {recursive: true});
-  copyDir('./assets', './project-dist/assets');
-  createBundle('./styles', './project-dist/style.css');
-  renderTemplate('./template.html', './project-dist/index.html');
+  await fs.mkdir(path.join(__dirname, 'project-dist'), {recursive: true});
+  copyDir('assets', 'project-dist/assets');
+  createBundle('styles', 'project-dist/style.css');
+  renderTemplate('template.html', 'project-dist/index.html');
 }
 
 buildPage();
