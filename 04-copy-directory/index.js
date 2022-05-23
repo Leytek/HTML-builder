@@ -2,9 +2,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
 
-async function copyDir(from, to){
-  const fromDirPath = url.fileURLToPath(new URL(from, import.meta.url)),
-    toDirPath = url.fileURLToPath(new URL(to, import.meta.url)),
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+export default async function copyDir(from, to, dirname = __dirname){
+  const fromDirPath = path.join(dirname, from),
+    toDirPath = path.join(dirname, to),
     fromDir = await fs.readdir(fromDirPath, {withFileTypes: true});
 
   await fs.mkdir(toDirPath, {recursive: true});
@@ -18,7 +20,7 @@ async function copyDir(from, to){
     if(file.isFile())
       fs.copyFile(path.join(fromDirPath, file.name), path.join(toDirPath, file.name));
     else
-      copyDir(from + '/' + file.name, to + '/' + file.name);
+      copyDir(path.join(from, file.name), path.join(to, file.name), dirname);
   }
 }
 
