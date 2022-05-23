@@ -1,11 +1,11 @@
 import process from 'process';
-import * as fs from 'fs';
+import fs from 'fs';
 import url from 'url';
 
 const filePath = url.fileURLToPath(new URL('./text.txt', import.meta.url));
 const fileStream = new fs.WriteStream(filePath, 'utf-8');
 
-console.log('Hello world! Enter you\'r massage:');
+process.stdout.write('Hello world! Enter you\'r massage:\n');
 
 process.stdin.on('data', chunk => {
   if(chunk.toString().includes('exit')) process.exit();
@@ -13,4 +13,4 @@ process.stdin.on('data', chunk => {
 });
 
 process.on('SIGINT', () => process.exit());
-process.on('exit', () => console.log('Goodbye world!'));
+process.on('exit', () => process.stdout.write('Goodbye world!'));

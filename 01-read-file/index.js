@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as process from 'process';
+import process from 'process';
+import fs from 'fs';
 import url from 'url';
 
 const filePath = url.fileURLToPath(new URL('./text.txt', import.meta.url));
