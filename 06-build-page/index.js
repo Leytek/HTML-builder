@@ -4,7 +4,7 @@ import path from 'path';
 import readline from 'readline';
 import url from 'url';
 import copyDir from '../04-copy-directory/index.js';
-import createBundle from '../05-merge-styles/index.js';
+import mergeStyles from '../05-merge-styles/index.js';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -36,7 +36,7 @@ async function renderTemplate(from, to){
 async function buildPage(){
   await fs.mkdir(path.join(__dirname, 'project-dist'), {recursive: true});
   copyDir('assets', 'project-dist/assets', __dirname);
-  createBundle('styles', 'project-dist/style.css', __dirname);
+  mergeStyles('styles', 'project-dist/style.css', __dirname);
   renderTemplate('template.html', 'project-dist/index.html');
 }
 
