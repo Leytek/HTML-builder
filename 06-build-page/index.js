@@ -21,11 +21,11 @@ async function renderTemplate(from, to, templateName){
 
   rl.on('line', line => {
     const name = line.match(/\{\{(\w+)\}\}/);
-    if(name)
-      promise = promise.then(r => fs.readFile(path.join(componentsDirPath, name[1] + path.extname(componentsDir[0]))))
-        .then(r => line.replace(/\{\{(\w+)\}\}/, r) + '\n', e => '');
-    else promise = promise.then(r => line + '\n');
-    promise = promise.then(r => fs.writeFile(resultPath, r, {flag: 'a'}));
+    let promiseLine;
+    if(name) promiseLine = fs.readFile(path.join(componentsDirPath, name[1] + path.extname(componentsDir[0])))
+        .then(r => line.replace(/\{\{\w+\}\}/, r) + '\n', e => '');
+    else promiseLine = line + '\n';
+    promise = promise.then(async r => fs.writeFile(resultPath, await promiseLine, {flag: 'a'}));
   });
   rl.on('close', () => {
     templateFile.close();
