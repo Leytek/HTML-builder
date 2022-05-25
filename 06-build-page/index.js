@@ -13,7 +13,8 @@ async function renderTemplate(from, to, templateName){
     componentsDirPath = path.join(__dirname, from),
     templateFile = await fs.open(templatePath),
     resultFile = await fs.open(resultPath, 'w'),
-    template = templateFile.createReadStream('utf-8'),
+    template = templateFile.createReadStream({encoding: 'utf-8'}),
+    result = resultFile.createWriteStream({encoding: 'utf-8'}),
     componentsDir = await fs.readdir(componentsDirPath),
     rl = readline.createInterface({input: template});
 
@@ -21,15 +22,28 @@ async function renderTemplate(from, to, templateName){
 
   rl.on('line', line => {
     const name = line.match(/\{\{(\w+)\}\}/);
-    let promiseLine;
-    if(name) promiseLine = fs.readFile(path.join(componentsDirPath, name[1] + path.extname(componentsDir[0])))
-        .then(r => line.replace(/\{\{\w+\}\}/, r) + '\n', e => '');
-    else promiseLine = line + '\n';
-    promise = promise.then(async r => fs.writeFile(resultPath, await promiseLine, {flag: 'a'}));
+    if(name)
+      promise = promise.then(r => new Promise(async r => {
+        const lineLoc = line.split(name[0]);
+        const componentFile = await fs.open(path.join(componentsDirPath, name[1] + path.extname(componentsDir[0]))).catch(e => null);
+        if(!componentFile) {
+          if(lineLoc[0].split` `.join``.length || lineLoc[1].split` `.join``.length)
+            result.write(lineLoc[0] + lineLoc[1] + '\n');
+          r();
+          return;
+        }
+        const component = componentFile.createReadStream({encoding: 'utf-8'});
+        result.write(lineLoc[0]);
+        component.pipe(result, {end: false});
+        component.on('end', () => {
+          result.write(lineLoc[1] + '\n');
+          r();
+        });
+      }));
+    else promise = promise.then(r => result.write(line + '\n'));
   });
   rl.on('close', () => {
-    templateFile.close();
-    resultFile.close();
+    promise.then(r => resultFile.close());
   });
 }
 
